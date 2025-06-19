@@ -20,7 +20,8 @@ export default {
           bg: '#181c24',
           card: '#232946',
           text: '#e0e6ed'
-        }
+        },
+        border: '#3a506b'
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
