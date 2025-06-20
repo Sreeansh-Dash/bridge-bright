@@ -11,7 +11,14 @@ export class PythonBridge {
     this.scriptPath = path.join(this.pythonPath, 'agent_bridge.py');
     
     // Try different Python commands based on environment
-    this.pythonCommands = ['python3', 'python', 'python3.11', 'python3.10', 'python3.9'];
+    this.pythonCommands = [
+      path.join(this.pythonPath, 'venv/bin/python'), // Virtual environment first
+      'python3', 
+      'python', 
+      'python3.11', 
+      'python3.10', 
+      'python3.9'
+    ];
   }
 
   async findPythonCommand() {
@@ -24,9 +31,12 @@ export class PythonBridge {
             else reject();
           });
           testProcess.on('error', reject);
+          setTimeout(() => reject(new Error('timeout')), 5000);
         });
+        console.log(`Found Python command: ${cmd}`);
         return cmd;
       } catch (error) {
+        console.log(`Python command ${cmd} not available:`, error.message);
         continue;
       }
     }
@@ -37,6 +47,7 @@ export class PythonBridge {
     return new Promise(async (resolve, reject) => {
       try {
         const pythonCmd = await this.findPythonCommand();
+        console.log(`Using Python command: ${pythonCmd}`);
         
         const pythonProcess = spawn(pythonCmd, [this.scriptPath], {
           cwd: this.pythonPath,
@@ -44,7 +55,8 @@ export class PythonBridge {
           env: {
             ...process.env,
             PYTHONPATH: this.pythonPath,
-            PYTHONUNBUFFERED: '1'
+            PYTHONUNBUFFERED: '1',
+            PATH: `${path.join(this.pythonPath, 'venv/bin')}:${process.env.PATH}`
           }
         });
 
@@ -70,7 +82,7 @@ export class PythonBridge {
         pythonProcess.on('close', (code) => {
           console.log(`Python process closed with code ${code}`);
           console.log('Python stdout:', outputData);
-          console.log('Python stderr:', errorData);
+          if (errorData) console.log('Python stderr:', errorData);
           
           if (code === 0 && outputData.trim()) {
             try {

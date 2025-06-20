@@ -10,8 +10,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "node server/index.js",
-    "postinstall": "cd brightbridgeDir && pip install -r requirements.txt",
-    "python-setup": "cd brightbridgeDir && pip install -r requirements.txt"
+    "python-setup": "cd brightbridgeDir && python -m venv venv && source venv/bin/activate && pip install -r requirements.txt"
   },
   "dependencies": {
     "react": "^18.3.1",
