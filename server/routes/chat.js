@@ -7,10 +7,10 @@ const brightBridge = new BrightBridgeAgent();
 // Rate limiting (simple in-memory implementation)
 const rateLimitMap = new Map();
 const RATE_LIMIT_WINDOW = 60000; // 1 minute
-const RATE_LIMIT_MAX_REQUESTS = 30; // 30 requests per minute
+const RATE_LIMIT_MAX_REQUESTS = 20; // Reduced for production
 
 const rateLimit = (req, res, next) => {
-  const clientId = req.ip || 'unknown';
+  const clientId = req.ip || req.connection.remoteAddress || 'unknown';
   const now = Date.now();
   
   if (!rateLimitMap.has(clientId)) {
@@ -39,6 +39,12 @@ const rateLimit = (req, res, next) => {
 
 router.post('/chat', rateLimit, async (req, res) => {
   try {
+    console.log('Received chat request:', {
+      body: req.body,
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+
     const { message, userName, conversationHistory } = req.body;
 
     // Input validation
@@ -71,9 +77,12 @@ router.post('/chat', rateLimit, async (req, res) => {
       conversationHistory: sanitizedHistory
     });
 
+    console.log(`Sending response: ${response.substring(0, 100)}...`);
+
     res.json({ 
       response,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      success: true
     });
 
   } catch (error) {
@@ -82,20 +91,30 @@ router.post('/chat', rateLimit, async (req, res) => {
     // Don't expose internal errors to client
     res.status(500).json({ 
       error: 'Failed to process message',
-      response: "I'm sorry, I'm having trouble responding right now. Please try again in a moment."
+      response: "I'm sorry, I'm having trouble responding right now. Please try again in a moment.",
+      success: false
     });
   }
 });
 
-// Test endpoint for development
-if (process.env.NODE_ENV === 'development') {
-  router.get('/test', (req, res) => {
-    res.json({
-      message: 'BrightBridge API is running',
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV
-    });
+// Health check endpoint
+router.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    python_path: process.env.PYTHONPATH || 'not set'
   });
-}
+});
+
+// Test endpoint for development
+router.get('/test', (req, res) => {
+  res.json({
+    message: 'BrightBridge API is running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    python_available: process.env.PYTHONPATH ? 'configured' : 'not configured'
+  });
+});
 
 export default router;

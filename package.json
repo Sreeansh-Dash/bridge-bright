@@ -9,6 +9,8 @@
     "server": "node server/index.js",
     "build": "vite build",
     "preview": "vite preview",
+    "start": "node server/index.js",
+    "postinstall": "cd brightbridgeDir && pip install -r requirements.txt",
     "python-setup": "cd brightbridgeDir && pip install -r requirements.txt"
   },
   "dependencies": {
@@ -21,8 +23,7 @@
     "lucide-react": "^0.263.1",
     "@google-cloud/aiplatform": "^3.11.0",
     "uuid": "^9.0.1",
-    "concurrently": "^8.2.2",
-    "child_process": "^1.0.2"
+    "concurrently": "^8.2.2"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
@@ -32,5 +33,9 @@
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.4",
     "vite": "^5.3.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "python": ">=3.8.0"
   }
 }
