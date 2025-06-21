@@ -1,5 +1,11 @@
-google-cloud-aiplatform>=1.49.0
-google-adk>=1.0.0
-python-dotenv==1.1.0
-google-generativeai>=0.3.0
+# Core dependencies for development mode
+python-dotenv==1.0.0
 requests>=2.31.0
+
+# Note: Google ADK dependencies are commented out for Railway deployment
+# These require special setup and credentials that may not work in all environments
+# google-cloud-aiplatform>=1.49.0
+# google-adk>=1.0.0
+# google-generativeai>=0.3.0
+
+# For production deployment, we'll use mock responses until proper ADK setup

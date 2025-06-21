@@ -10,18 +10,25 @@ export class PythonBridge {
     this.pythonPath = path.join(__dirname, '../../brightbridgeDir');
     this.scriptPath = path.join(this.pythonPath, 'agent_bridge.py');
     
-    // Try different Python commands based on environment
+    // Enhanced Python command detection for Railway
     this.pythonCommands = [
-      path.join(this.pythonPath, 'venv/bin/python'), // Virtual environment first
-      'python3', 
-      'python', 
-      'python3.11', 
-      'python3.10', 
-      'python3.9'
+      'python3',  // Railway default
+      'python',
+      'python3.11',
+      'python3.10',
+      'python3.9',
+      '/usr/bin/python3',
+      '/usr/local/bin/python3'
     ];
   }
 
   async findPythonCommand() {
+    // Check if we're on Railway
+    if (process.env.RAILWAY_ENVIRONMENT_NAME) {
+      console.log('Detected Railway environment, using python3');
+      return 'python3';
+    }
+
     for (const cmd of this.pythonCommands) {
       try {
         const testProcess = spawn(cmd, ['--version'], { stdio: 'pipe' });
@@ -31,7 +38,7 @@ export class PythonBridge {
             else reject();
           });
           testProcess.on('error', reject);
-          setTimeout(() => reject(new Error('timeout')), 5000);
+          setTimeout(() => reject(new Error('timeout')), 3000);
         });
         console.log(`Found Python command: ${cmd}`);
         return cmd;
@@ -56,7 +63,9 @@ export class PythonBridge {
             ...process.env,
             PYTHONPATH: this.pythonPath,
             PYTHONUNBUFFERED: '1',
-            PATH: `${path.join(this.pythonPath, 'venv/bin')}:${process.env.PATH}`
+            // Railway-specific environment
+            RAILWAY_ENVIRONMENT_NAME: process.env.RAILWAY_ENVIRONMENT_NAME || '',
+            NODE_ENV: process.env.NODE_ENV || 'production'
           }
         });
 
@@ -114,13 +123,14 @@ export class PythonBridge {
         pythonProcess.stdin.write(requestData);
         pythonProcess.stdin.end();
 
-        // Set a timeout to prevent hanging
+        // Set a timeout appropriate for Railway
+        const timeout = process.env.RAILWAY_ENVIRONMENT_NAME ? 30000 : 45000;
         setTimeout(() => {
           if (!pythonProcess.killed) {
             pythonProcess.kill('SIGTERM');
             resolve("I'm taking longer than usual to respond. Please try again with a shorter message.");
           }
-        }, 45000); // 45 second timeout for Railway
+        }, timeout);
         
       } catch (error) {
         console.error('Python bridge setup error:', error);

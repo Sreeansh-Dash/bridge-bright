@@ -1,11 +1,10 @@
 [phases.setup]
-nixPkgs = ['nodejs_18', 'python311', 'python311Packages.pip', 'python311Packages.virtualenv']
+nixPkgs = ['nodejs_18', 'python311', 'python311Packages.pip']
 
 [phases.install]
 cmds = [
   'npm ci --omit=dev',
-  'cd brightbridgeDir && python -m venv venv',
-  'cd brightbridgeDir && source venv/bin/activate && pip install -r requirements.txt'
+  'cd brightbridgeDir && python3 -m pip install --user -r requirements.txt'
 ]
 
 [phases.build]
@@ -16,4 +15,4 @@ cmd = 'npm start'
 
 [variables]
 PYTHONPATH = './brightbridgeDir'
-PATH = './brightbridgeDir/venv/bin:$PATH'
+PYTHON_VERSION = '3.11'

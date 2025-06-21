@@ -10,7 +10,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "node server/index.js",
-    "python-setup": "cd brightbridgeDir && python -m venv venv && source venv/bin/activate && pip install -r requirements.txt"
+    "python-setup": "cd brightbridgeDir && python3 -m pip install --user -r requirements.txt",
+    "railway-build": "npm install && npm run build",
+    "railway-start": "npm start"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -20,7 +22,6 @@
     "dotenv": "^16.3.1",
     "axios": "^1.6.0",
     "lucide-react": "^0.263.1",
-    "@google-cloud/aiplatform": "^3.11.0",
     "uuid": "^9.0.1",
     "concurrently": "^8.2.2"
   },
